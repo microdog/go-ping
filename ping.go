@@ -50,6 +50,7 @@ import (
 	"math"
 	"math/rand"
 	"net"
+	"os"
 	"sync"
 	"syscall"
 	"time"
@@ -69,6 +70,7 @@ const (
 var (
 	ipv4Proto = map[string]string{"ip": "ip4:icmp", "udp": "udp4"}
 	ipv6Proto = map[string]string{"ip": "ip6:ipv6-icmp", "udp": "udp6"}
+	idRand    = rand.New(rand.NewSource(int64(os.Getpid())))
 )
 
 // NewPinger returns a new Pinger struct pointer
@@ -85,18 +87,17 @@ func NewPinger(addr string) (*Pinger, error) {
 		ipv4 = false
 	}
 
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return &Pinger{
 		ipaddr:   ipaddr,
 		addr:     addr,
 		Interval: time.Second,
 		Timeout:  time.Second * 100000,
 		Count:    -1,
-		id:       r.Intn(math.MaxInt16),
+		id:       idRand.Intn(math.MaxInt16),
 		network:  "udp",
 		ipv4:     ipv4,
 		Size:     timeSliceLength,
-		Tracker:  r.Int63n(math.MaxInt64),
+		Tracker:  idRand.Int63n(math.MaxInt64),
 		done:     make(chan bool),
 	}, nil
 }
